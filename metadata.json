@@ -1,0 +1,6 @@
+{
+  "name": "ScaleX",
+  "description": "Specialty die-cast model car store preparing curated 1:64 scale castings, Hot Wheels, Mini GT, Kaido House, and upcoming collector releases.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
