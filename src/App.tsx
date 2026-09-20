@@ -24,12 +24,26 @@ const AppContent: React.FC = () => {
 
   const [isWebsiteRevealed, setIsWebsiteRevealed] = useState(false);
 
-  // Staggered reveal states for floating hero elements
-  const [revealLogo, setRevealLogo] = useState(false);
-  const [revealNav, setRevealNav] = useState(false);
-  const [revealActions, setRevealActions] = useState(false);
+  // Staggered reveal states for hero elements (over ~5 seconds after 4s initial delay)
+  // 1. Heading
   const [revealHeadline, setRevealHeadline] = useState(false);
+  // 2. Logo
+  const [revealLogo, setRevealLogo] = useState(false);
+  // 3. Navigation Tabs (one-by-one)
+  const [revealedNavTabs, setRevealedNavTabs] = useState<{ [key: string]: boolean }>({
+    home: false,
+    about: false,
+    shop: false,
+    preorders: false,
+    contact: false,
+  });
+  // 4. Icons (Account, then Cart)
+  const [revealAccountIcon, setRevealAccountIcon] = useState(false);
+  const [revealCartIcon, setRevealCartIcon] = useState(false);
+  // 5. CTA Button
   const [revealButton, setRevealButton] = useState(false);
+  // 6. Fade background to black after all elements settled + 1s wait
+  const [fadeBackgroundToBlack, setFadeBackgroundToBlack] = useState(false);
 
   const hasUnlockedScrollRef = useRef(false);
 
@@ -45,50 +59,92 @@ const AppContent: React.FC = () => {
     };
   }, []);
 
-  // When intro video ends:
-  // - Background video & dark overlay take over behind UI
-  // - Floating UI reveals smoothly
-  // - Scrolling unlocks
-  // - Intro NEVER loops or returns
+  // When intro reaches 4s mark:
+  // After 4s delay, spread the entire UI reveal across ~5 seconds:
+  // 1. First: Hero Heading (at 0ms)
+  // 2. Next: Logo (at 600ms)
+  // 3. Next: Nav Tabs one-by-one:
+  //    - HOME (at 1200ms)
+  //    - ABOUT (at 1700ms)
+  //    - SHOP (at 2200ms)
+  //    - PREORDERS (at 2700ms)
+  //    - CONTACT US (at 3200ms)
+  // 4. Next: Icons:
+  //    - Account icon (at 3700ms)
+  //    - Cart icon (at 4200ms)
+  // 5. Finally: CTA Button ("EXPLORE COLLECTIONS →") (at 4800ms)
+  // -> Unlock scroll (at 5200ms)
   const handleIntroEnd = useCallback(() => {
-    // 1. Make UI container visible
+    // 0. Container becomes active
     setIsWebsiteRevealed(true);
 
-    // 2. Staggered sequence:
-    // Transition begins (t=0)
-    // -> logo fades in (t=200ms)
-    // -> navigation tabs fade in (t=380ms)
-    // -> profile/cart icons fade in (t=550ms)
-    // -> centered headline fades in (t=750ms)
-    // -> centered button fades in (t=1000ms)
-    // -> normal scrolling unlocked (t=1500ms)
-    setTimeout(() => {
-      setRevealLogo(true);
-    }, 200);
-
-    setTimeout(() => {
-      setRevealNav(true);
-    }, 380);
-
-    setTimeout(() => {
-      setRevealActions(true);
-    }, 550);
-
+    // 1. First: HERO HEADING
     setTimeout(() => {
       setRevealHeadline(true);
-    }, 750);
+    }, 100);
 
+    // 2. Next: LOGO
+    setTimeout(() => {
+      setRevealLogo(true);
+    }, 700);
+
+    // 3. Next: NAVIGATION TABS (One by one)
+    // HOME
+    setTimeout(() => {
+      setRevealedNavTabs((prev) => ({ ...prev, home: true }));
+    }, 1300);
+
+    // ABOUT
+    setTimeout(() => {
+      setRevealedNavTabs((prev) => ({ ...prev, about: true }));
+    }, 1800);
+
+    // SHOP
+    setTimeout(() => {
+      setRevealedNavTabs((prev) => ({ ...prev, shop: true }));
+    }, 2300);
+
+    // PREORDERS
+    setTimeout(() => {
+      setRevealedNavTabs((prev) => ({ ...prev, preorders: true }));
+    }, 2800);
+
+    // CONTACT US
+    setTimeout(() => {
+      setRevealedNavTabs((prev) => ({ ...prev, contact: true }));
+    }, 3300);
+
+    // 4. Next: ICONS
+    // Account icon
+    setTimeout(() => {
+      setRevealAccountIcon(true);
+    }, 3800);
+
+    // Cart icon
+    setTimeout(() => {
+      setRevealCartIcon(true);
+    }, 4300);
+
+    // 5. Finally: CTA BUTTON ("EXPLORE COLLECTIONS →")
     setTimeout(() => {
       setRevealButton(true);
-    }, 1000);
+    }, 4850);
 
+    // 6. After the FINAL element has completely appeared (4850ms + 1200ms = 6050ms):
+    //    Wait exactly 1 second (1000ms), during which everything remains fully visible and settled.
+    //    At 7050ms, fade the BACKGROUND to black over exactly 2 seconds (2000ms).
+    setTimeout(() => {
+      setFadeBackgroundToBlack(true);
+    }, 7050);
+
+    // Unlock page scroll cleanly once sequence and background fade complete
     setTimeout(() => {
       if (!hasUnlockedScrollRef.current) {
         hasUnlockedScrollRef.current = true;
         document.body.style.overflow = '';
         document.documentElement.style.overflow = '';
       }
-    }, 1500);
+    }, 9100);
   }, []);
 
   const renderCurrentPage = () => {
@@ -103,7 +159,6 @@ const AppContent: React.FC = () => {
       case 'shop':
       case 'categories':
       case 'category-view':
-        // Category browsing now seamlessly lives inside the ShopPage
         return <ShopPage />;
       case 'preorders':
         return <PreordersPage />;
@@ -127,36 +182,34 @@ const AppContent: React.FC = () => {
     }
   };
 
-  // Only the Home page starts with the floating hero video at the very top.
-  // Other pages (Shop, Preorders, Account, Wishlist) must start below the sticky header.
   const isHomePage = currentPage === 'home';
 
   return (
     <div className="relative min-h-screen bg-[#08090b] text-[#e2e8f0]">
-      {/* 1. Cinematic Video Layer: Two separate video elements (Intro: single play, Background: continuous loop) */}
-      <CinematicIntro onIntroEnd={handleIntroEnd} />
+      {/* 1. Cinematic Video Layer */}
+      <CinematicIntro
+        onIntroEnd={handleIntroEnd}
+        fadeToBlack={fadeBackgroundToBlack}
+      />
 
-      {/* 2. Main Website Experience (Revealed progressively after intro video ends) */}
+      {/* 2. Main Website Experience (Progressively revealed over ~5s after 4s initial delay) */}
       <div
         id="scalex-main-website"
-        className={`relative z-10 flex flex-col min-h-screen text-[#e2e8f0] transition-opacity duration-700 ease-out ${
+        className={`relative z-10 flex flex-col min-h-screen w-full max-w-full text-[#e2e8f0] transition-opacity duration-[1200ms] ease-out ${
           isWebsiteRevealed ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        {/* Floating Top Navigation (At top of hero: uncontained floating; On scroll or non-home: glassy sticky header) */}
+        {/* Floating Top Navigation */}
         <Navbar
           isRevealed={isWebsiteRevealed}
           revealLogo={revealLogo}
-          revealNav={revealNav}
-          revealActions={revealActions}
+          revealedNavTabs={revealedNavTabs}
+          revealAccountIcon={revealAccountIcon}
+          revealCartIcon={revealCartIcon}
         />
 
-        {/* 
-          Main Content Area:
-          - On the Home page, content starts at top=0 because the Hero video overlay sits directly beneath the floating nav.
-          - On all other pages (Shop, Preorders, etc.), content is cleanly padded with pt-24 sm:pt-28 so it begins cleanly below the header bar without overlapping or being hidden behind the sticky header.
-        */}
-        <main className={`flex-1 relative z-10 ${isHomePage ? '' : 'pt-24 sm:pt-28'}`}>
+        {/* Main Content Area */}
+        <main className={`flex-1 relative z-10 w-full max-w-full ${isHomePage ? '' : 'pt-24 sm:pt-28'}`}>
           {renderCurrentPage()}
         </main>
 

@@ -18,7 +18,7 @@ export const PreordersSection: React.FC = () => {
   return (
     <section className="py-16 sm:py-20 bg-[#08090b] border-y border-[#292c32] relative overflow-hidden" id="preorders-section">
       {/* Subtle Accent Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-red-600/[0.025] rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[500px] h-[240px] sm:h-[300px] bg-red-600/[0.025] rounded-full blur-[80px] sm:blur-[120px] pointer-events-none" />
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
         {/* Eyebrow */}

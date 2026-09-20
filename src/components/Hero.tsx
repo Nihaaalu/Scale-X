@@ -21,10 +21,8 @@ export const Hero: React.FC<HeroProps> = ({
       <div className="max-w-4xl mx-auto w-full flex flex-col items-center justify-center text-center">
         {/* Main Headline: Centered Horizontally & Vertically */}
         <h1
-          className={`text-4xl sm:text-6xl md:text-7xl lg:text-[80px] font-heading font-extrabold text-white tracking-tight leading-[1.08] text-center drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)] transition-all duration-800 ease-out ${
-            revealHeadline
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-[15px]'
+          className={`text-4xl sm:text-6xl md:text-7xl lg:text-[80px] font-heading font-extrabold text-white tracking-tight leading-[1.08] text-center drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)] transition-opacity duration-[1200ms] ease-linear ${
+            revealHeadline ? 'opacity-100' : 'opacity-0'
           }`}
         >
           Your Next Scale<br />
@@ -33,10 +31,10 @@ export const Hero: React.FC<HeroProps> = ({
 
         {/* Explore Collections Button: Centered Horizontally Directly Below Headline */}
         <div
-          className={`mt-8 sm:mt-10 flex justify-center transition-all duration-800 ease-out ${
+          className={`mt-8 sm:mt-10 flex justify-center transition-all duration-[1200ms] ease-out ${
             revealButton
               ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-[15px]'
+              : 'opacity-0 translate-y-[8px]'
           }`}
         >
           <button

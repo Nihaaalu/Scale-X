@@ -7,15 +7,23 @@ import { PageRoute } from '../types';
 interface NavbarProps {
   isRevealed?: boolean;
   revealLogo?: boolean;
-  revealNav?: boolean;
-  revealActions?: boolean;
+  revealedNavTabs?: { [route: string]: boolean };
+  revealAccountIcon?: boolean;
+  revealCartIcon?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   isRevealed = true,
   revealLogo = true,
-  revealNav = true,
-  revealActions = true,
+  revealedNavTabs = {
+    home: true,
+    about: true,
+    shop: true,
+    preorders: true,
+    contact: true,
+  },
+  revealAccountIcon = true,
+  revealCartIcon = true,
 }) => {
   const { currentPage, navigateTo, cartCount, setIsCartOpen } = useStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -24,8 +32,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   // Track scroll position to transition from floating clear elements to a docked glass capsule
   useEffect(() => {
     const handleScroll = () => {
-      // If we are on home page, change to pill when scrolled past 60px
-      // On non-home pages, always keep the refined glass look for solid legibility
       if (currentPage !== 'home') {
         setIsScrolled(true);
       } else {
@@ -55,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header
       id="scalex-header-bar"
-      className={`fixed top-0 inset-x-0 z-40 w-full transition-all duration-500 ease-out pointer-events-none ${
+      className={`fixed top-0 inset-x-0 z-40 w-full transition-all duration-[1200ms] ease-out pointer-events-none ${
         isRevealed ? 'opacity-100' : 'opacity-0'
       } ${
         isScrolled
@@ -64,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       }`}
     >
       <div
-        className={`mx-auto transition-all duration-500 ease-out pointer-events-auto ${
+        className={`mx-auto transition-all duration-[1200ms] ease-out pointer-events-auto ${
           isScrolled
             ? 'w-[95%] sm:w-[92%] max-w-5xl rounded-2xl bg-[#0a0a0c]/60 backdrop-blur-xl border border-white/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.5)] px-4 sm:px-6 py-2 sm:py-2.5'
             : 'w-full max-w-7xl px-4 sm:px-6 md:px-10 lg:px-14 bg-transparent border border-transparent shadow-none py-0'
@@ -75,8 +81,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* LEFT: ScaleX Brand Logo (Independent on the left)        */}
           {/* ========================================================= */}
           <div
-            className={`flex items-center shrink-0 z-10 transition-all duration-700 ease-out ${
-              revealLogo ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[15px]'
+            className={`flex items-center shrink-0 z-10 transition-all duration-[1200ms] ease-out ${
+              revealLogo ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[8px]'
             }`}
           >
             <button
@@ -91,24 +97,27 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* ========================================================= */}
           {/* CENTER: Navigation Tabs (HOME | ABOUT | SHOP | PREORDERS | CONTACT US) */}
-          {/* Absolutely centered on md+ screens; single line, no wrapping */}
+          {/* Absolutely centered on md+ screens; single line, staggered one-by-one */}
           {/* ========================================================= */}
           <nav
             aria-label="Main Navigation"
-            className={`hidden md:flex items-center justify-center gap-1.5 lg:gap-3.5 xl:gap-5 absolute left-1/2 -translate-x-1/2 transition-all duration-700 ease-out flex-nowrap whitespace-nowrap ${
-              revealNav ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[15px]'
-            }`}
+            className="hidden md:flex items-center justify-center gap-1.5 lg:gap-3.5 xl:gap-5 absolute left-1/2 -translate-x-1/2 flex-nowrap whitespace-nowrap"
           >
             {navLinks.map((link) => {
               const isActive =
                 currentPage === link.route ||
                 (link.route === 'shop' && (currentPage === 'categories' || currentPage === 'category-view'));
+              const isTabRevealed = revealedNavTabs[link.route] ?? true;
 
               return (
                 <button
                   key={link.route}
                   onClick={() => handleNavClick(link.route)}
-                  className={`relative px-2.5 lg:px-3 py-1.5 text-[11px] lg:text-xs font-mono-spec font-bold tracking-wider lg:tracking-widest uppercase transition-colors duration-200 cursor-pointer select-none whitespace-nowrap shrink-0 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] ${
+                  className={`relative px-2.5 lg:px-3 py-1.5 text-[11px] lg:text-xs font-mono-spec font-bold tracking-wider lg:tracking-widest uppercase transition-all duration-[1200ms] ease-out cursor-pointer select-none whitespace-nowrap shrink-0 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] ${
+                    isTabRevealed
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-[8px] pointer-events-none'
+                  } ${
                     isActive
                       ? 'text-white'
                       : 'text-zinc-300 hover:text-white'
@@ -124,18 +133,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* ========================================================= */}
-          {/* RIGHT: Profile & Cart Icons (Independent on the right)   */}
+          {/* RIGHT: Profile & Cart Icons (Revealed individually)      */}
           {/* ========================================================= */}
-          <div
-            className={`flex items-center gap-2 sm:gap-3 shrink-0 z-10 transition-all duration-700 ease-out ${
-              revealActions ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[15px]'
-            }`}
-          >
-            {/* Profile icon */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 z-10">
+            {/* Account / Profile icon */}
             <button
               onClick={() => handleNavClick('account')}
               aria-label="Account Profile"
-              className={`p-2 rounded-xl text-white/90 hover:text-white transition-all duration-200 cursor-pointer drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] hover:scale-105 active:scale-95 ${
+              className={`p-2 rounded-xl text-white/90 hover:text-white transition-all duration-[1200ms] ease-out cursor-pointer drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] hover:scale-105 active:scale-95 ${
+                revealAccountIcon ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[8px] pointer-events-none'
+              } ${
                 currentPage === 'account' ? 'text-white bg-white/10' : 'hover:bg-white/10'
               }`}
             >
@@ -146,7 +153,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setIsCartOpen(true)}
               aria-label="Shopping Cart"
-              className="relative p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 cursor-pointer flex items-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] hover:scale-105 active:scale-95 hover:bg-white/10"
+              className={`relative p-2 text-white/90 hover:text-white rounded-xl transition-all duration-[1200ms] ease-out cursor-pointer flex items-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] hover:scale-105 active:scale-95 hover:bg-white/10 ${
+                revealCartIcon ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[8px] pointer-events-none'
+              }`}
             >
               <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
               {cartCount > 0 && (
@@ -160,7 +169,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle Navigation Menu"
-              className="md:hidden p-2 text-white/90 hover:text-white rounded-xl hover:bg-white/10 transition-all cursor-pointer drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
+              className={`md:hidden p-2 text-white/90 hover:text-white rounded-xl hover:bg-white/10 transition-all duration-[1200ms] ease-out cursor-pointer drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] ${
+                revealLogo ? 'opacity-100' : 'opacity-0'
+              }`}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
